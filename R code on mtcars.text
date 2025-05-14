@@ -1,0 +1,76 @@
+# Load necessary libraries library(lmtest) 
+#For Breusch-Pagan test
+library(car)# For Variance Inflation Factor (VIF) 
+library(nlme) # For Weighted Least Squares (WLS)
+
+#load the mtcars data set
+ head(mtcars)
+
+### fitting the model####
+
+fit=lm(mpg~hp+wt+qsec+cyl+disp,mtcars)
+
+summary(fit)
+#=========================================================
+###check the assumption of linearity## 
+# by using residual vs fitted value plot #
+plot(fit,which=1,main="residual vs fitted value")
+#========================================================
+######check constant variance(homosdacity)assumption###### ### by using goldfeld-quandt test###
+
+gqtest(fit, order.by = ~ hp, data = mtcars, fraction =0.2)
+#====================================================================
+###check assumption of normality###
+##by using shapiro wilk test### 
+
+shapiro.test(residuals(fit))
+#=====================================================
+### check the assumption of multicolliniarity###
+
+### by using variance inflation factor####
+
+vif(fit)
+#===========================================
+
+mtcars$hp_centered <- scale(mtcars$hp, center = TRUE, scale = FALSE) mtcars$wt_centered <- scale(mtcars$wt, center = TRUE, scale = FALSE)
+
+model_reduced <- lm(mpg ~ hp_centered + wt_centered + qsec, data = mtcars)
+#==============================================================
+vif(model_reduced)
+#========================
+model_reduced <- lm(mpg ~ hp_centered + wt_centered + hp_centered:wt_centered + qsec, data = mtcars)
+
+#================================
+plot(model_reduced, which = 1)
+#====================================================================
+###Refit the model###
+model_reduced <- lm(mpg ~ hp_centered + wt_centered + hp_centered:wt_centered + qsec, data = mtcars)
+#=========================
+####Rechecking the assumption linearity###
+
+###by using residual vs fitted value plot###
+
+plot(model_reduced,which=1,main="residual vs fitted value")
+####Recheckconstant variance(Homoscedasticity) assumption###
+
+### by using goldfeld-quandt test##
+
+gqtest(model_reduced, order.by = ~ hp, data = mtcars, fraction = 0.2)
+#===========================================================================
+######Recheck assumption of normality###
+
+# ##by using shapiro wilk test###
+
+shapiro.test(residuals(model_reduced))
+#=======================================================================
+
+
+### check the assumption of multicolliniarity###
+
+### by using variance inflation factor####
+
+vif(model_reduced)
+#===============================================================
+###Display the summary of reduced model###
+
+summary(model_reduced)
